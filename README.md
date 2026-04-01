@@ -6,7 +6,7 @@
 
 docker exec -it ansible bash
 
-![Launching containers](https://github.com/Nik7Zol/Test-task-RTK-COD/images/Launching_containers.png)
+![Launching containers](https://github.com/Nik7Zol/Test-task-RTK-COD/blob/main/images/Launching_containers.png)
 
 ansible-playbook -i hosts.yml playbooks/playbook_lb.yml
 
