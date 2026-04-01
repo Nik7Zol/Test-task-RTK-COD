@@ -1,0 +1,20 @@
+upstream backend {
+    server backend1:8080;
+    server backend2:8080;
+}
+
+server {
+    listen 80;
+    server_name _;
+
+    location / {
+        proxy_pass http://backend;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    location /status {
+        vhost_traffic_status_display;
+        vhost_traffic_status_display_format prometheus;
+    }
+}

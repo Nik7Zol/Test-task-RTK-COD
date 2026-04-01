@@ -1,0 +1,24 @@
+- name: Wait for monitoring services
+  hosts: localhost
+  gather_facts: no
+  vars:
+    grafana_url: "http://grafana:3000"
+    vm_url: "http://victoriametrics:8428"
+  tasks:
+    - name: Wait for Grafana to be ready
+      uri:
+        url: "{{ grafana_url }}/api/health"
+        status_code: 200
+      register: result
+      until: result.status == 200
+      retries: 30
+      delay: 5
+
+    - name: Wait for VictoriaMetrics to be ready
+      uri:
+        url: "{{ vm_url }}/health"
+        status_code: 200
+      register: result
+      until: result.status == 200
+      retries: 30
+      delay: 5

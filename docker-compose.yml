@@ -1,0 +1,120 @@
+version: '3.8'
+
+networks:
+  app_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.100.0/24
+
+services:
+  # Балансировщики
+  lb1:
+    build:
+      context: .
+      dockerfile: lb1/Dockerfile
+    container_name: lb1
+    hostname: lb1
+    networks:
+      app_net:
+        ipv4_address: 192.168.100.10
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "8081:80"
+    restart: unless-stopped
+
+  lb2:
+    build:
+      context: .
+      dockerfile: lb2/Dockerfile
+    container_name: lb2
+    hostname: lb2
+    networks:
+      app_net:
+        ipv4_address: 192.168.100.11
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "8082:80"
+    restart: unless-stopped
+
+  # Бэкенды
+  backend1:
+    build:
+      context: .
+      dockerfile: backend1/Dockerfile
+    container_name: backend1
+    hostname: backend1
+    networks:
+      app_net:
+        ipv4_address: 192.168.100.20
+    ports:
+      - "8083:8080"
+    restart: unless-stopped
+
+  backend2:
+    build:
+      context: .
+      dockerfile: backend2/Dockerfile
+    container_name: backend2
+    hostname: backend2
+    networks:
+      app_net:
+        ipv4_address: 192.168.100.21
+    ports:
+      - "8084:8080"
+    restart: unless-stopped
+
+  # Ansible
+  ansible:
+    build:
+      context: .
+      dockerfile: ansible/Dockerfile
+    container_name: ansible
+    hostname: ansible
+    networks:
+      - app_net
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./ansible:/ansible   # монтируем для удобства редактирования
+    restart: unless-stopped
+
+  # VictoriaMetrics
+  victoriametrics:
+    image: victoriametrics/victoria-metrics:latest
+    container_name: victoriametrics
+    hostname: victoriametrics
+    networks:
+      - app_net
+    ports:
+      - "8428:8428"
+    volumes:
+      - ./monitoring/victoriametrics/promscrape.yml:/etc/victoriametrics/promscrape.yml
+      - victoria-data:/victoria-metrics-data
+    command:
+      - "-promscrape.config=/etc/victoriametrics/promscrape.yml"
+      - "-storageDataPath=/victoria-metrics-data"
+    restart: unless-stopped
+
+  # Grafana
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    hostname: grafana
+    networks:
+      - app_net
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+      - grafana-data:/var/lib/grafana
+    restart: unless-stopped
+
+volumes:
+  victoria-data:
+  grafana-data:

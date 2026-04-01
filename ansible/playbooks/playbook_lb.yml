@@ -1,0 +1,74 @@
+- name: Install and configure Nginx with VTS module
+  hosts: lb
+  become: yes
+  vars:
+    nginx_version: "1.24.0"
+    vts_version: "0.2.2"
+  tasks:
+    - name: Install build dependencies
+      apt:
+        name:
+          - build-essential
+          - libpcre3-dev
+          - zlib1g-dev
+          - libssl-dev
+          - git
+        state: present
+
+    - name: Download Nginx source
+      get_url:
+        url: "http://nginx.org/download/nginx-{{ nginx_version }}.tar.gz"
+        dest: "/usr/src/nginx-{{ nginx_version }}.tar.gz"
+
+    - name: Extract Nginx source
+      unarchive:
+        src: "/usr/src/nginx-{{ nginx_version }}.tar.gz"
+        dest: /usr/src/
+        remote_src: yes
+
+    - name: Clone VTS module
+      git:
+        repo: "https://github.com/vozlt/nginx-module-vts.git"
+        dest: "/usr/src/nginx-module-vts"
+        version: "v{{ vts_version }}"
+
+    - name: Configure Nginx with VTS
+      command: >
+        ./configure --with-http_ssl_module --with-http_v2_module
+        --add-module=/usr/src/nginx-module-vts
+        --prefix=/etc/nginx
+        --sbin-path=/usr/sbin/nginx
+        --conf-path=/etc/nginx/nginx.conf
+        --error-log-path=/var/log/nginx/error.log
+        --http-log-path=/var/log/nginx/access.log
+        --pid-path=/var/run/nginx.pid
+      args:
+        chdir: "/usr/src/nginx-{{ nginx_version }}"
+
+    - name: Compile and install Nginx
+      make:
+        chdir: "/usr/src/nginx-{{ nginx_version }}"
+        target: install
+
+    - name: Copy nginx main configuration
+      template:
+        src: /ansible/files/nginx.conf.j2
+        dest: /etc/nginx/nginx.conf
+      notify: restart nginx
+
+    - name: Create nginx log directory
+      file:
+        path: /var/log/nginx
+        state: directory
+        mode: 0755
+
+    - name: Start nginx
+      command: nginx
+      become: yes
+      ignore_errors: yes
+
+  handlers:
+    - name: restart nginx
+      command: nginx -s reload
+      become: yes
+

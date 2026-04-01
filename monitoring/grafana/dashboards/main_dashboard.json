@@ -1,0 +1,33 @@
+{
+  "dashboard": {
+    "title": "Main Dashboard",
+    "panels": [
+      {
+        "title": "Статус балансировщиков (VIP)",
+        "type": "stat",
+        "targets": [{ "expr": "keepalived_vip" }]
+      },
+      {
+        "title": "Доступность бэкенд-нод",
+        "type": "stat",
+        "targets": [{ "expr": "up{job=\"node_exporter\"}" }]
+      },
+      {
+        "title": "Нагрузка CPU (средняя за 5 мин)",
+        "type": "timeseries",
+        "targets": [{ "expr": "node_load5" }]
+      },
+      {
+        "title": "Состояние VIP-адреса",
+        "type": "stat",
+        "targets": [{ "expr": "keepalived_vip" }]
+      },
+      {
+        "title": "HTTP статус-коды (2xx)",
+        "type": "timeseries",
+        "targets": [{ "expr": "nginx_vts_server_requests_total{host="_",code="2xx"}" }]
+      }
+    ],
+    "timezone": "browser"
+  }
+}

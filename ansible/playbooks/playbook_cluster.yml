@@ -1,0 +1,37 @@
+- name: Install and configure Keepalived for HA
+  hosts: lb
+  become: yes
+  vars:
+    vip: "192.168.100.100"
+  tasks:
+    - name: Install keepalived
+      apt:
+        name: keepalived
+        state: present
+
+    - name: Create check script
+      copy:
+        dest: /usr/local/bin/check_nginx.sh
+        mode: 0755
+        content: |
+          #!/bin/bash
+          if pgrep nginx > /dev/null; then
+            exit 0
+          else
+            exit 1
+          fi
+
+    - name: Configure keepalived
+      template:
+        src: /ansible/files/keepalived.conf.j2
+        dest: /etc/keepalived/keepalived.conf
+
+    - name: Stop keepalived if running
+      shell: pkill keepalived || true
+      become: yes
+      ignore_errors: yes
+
+    - name: Start keepalived daemon
+      shell: keepalived -f /etc/keepalived/keepalived.conf &
+      become: yes
+      ignore_errors: yes
