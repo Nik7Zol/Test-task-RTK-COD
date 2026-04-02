@@ -42,13 +42,10 @@
         body_format: json
         status_code: [200, 409]
 
-    - name: Import dashboard from file
-      uri:
-        url: "{{ grafana_url }}/api/dashboards/db"
-        method: POST
-        headers:
-          Authorization: "{{ auth_header }}"
-          Content-Type: "application/json"
-        body: "{{ lookup('file', '/ansible/files/main_dashboard.json') | from_json }}"
-        body_format: json
-        status_code: 200
+    - name: Import dashboard via curl
+      shell: |
+        curl -X POST -u admin:admin http://grafana:3000/api/dashboards/db \
+          -H "Content-Type: application/json" \
+          -d @/ansible/files/main_dashboard.json
+      register: curl_result
+      failed_when: curl_result.rc != 0 or ('"success"' not in curl_result.stdout and '"id"' not in curl_result.stdout)

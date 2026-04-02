@@ -1,4 +1,4 @@
-- name: Install node_exporter with textfile collector
+- name: Install node_exporter on all nodes
   hosts: all:!monitoring
   become: yes
   vars:
@@ -16,22 +16,31 @@
         remote_src: yes
         extra_opts: ['--strip-components=1']
 
+    - name: Ensure node_exporter is executable
+      file:
+        path: /usr/local/bin/node_exporter
+        mode: 0755
+
+    - name: Start node_exporter as background process
+      shell: |
+        nohup /usr/local/bin/node_exporter > /var/log/node_exporter.log 2>&1 &
+        sleep 2
+        pgrep node_exporter
+      become: yes
+      register: node_start
+      failed_when: node_start.rc != 0
+
+- name: Setup keepalived metrics (textfile collector) on lb nodes
+  hosts: lb
+  become: yes
+  tasks:
     - name: Create directory for textfile collector
       file:
         path: /var/lib/node_exporter/textfile
         state: directory
         mode: 0755
 
-    - name: Start node_exporter with textfile collector
-      shell: "nohup /usr/local/bin/node_exporter --collector.textfile.directory=/var/lib/node_exporter/textfile > /dev/null 2>&1 &"
-      become: yes
-      ignore_errors: yes
-
-- name: Setup keepalived metrics (textfile collector)
-  hosts: lb
-  become: yes
-  tasks:
-    - name: Create check VIP script
+    - name: Create script to check VIP
       copy:
         dest: /usr/local/bin/check_vip.sh
         mode: 0755
@@ -49,12 +58,13 @@
         name: cron
         state: present
 
-    - name: Start cron
-      shell: service cron start || cron
+    - name: Start cron daemon
+      shell: pgrep cron || (cron && sleep 1)
       become: yes
+      changed_when: false
       ignore_errors: yes
 
-    - name: Add cron job for VIP check
+    - name: Add cron job to update VIP status
       cron:
         name: "check_vip"
         minute: "*"

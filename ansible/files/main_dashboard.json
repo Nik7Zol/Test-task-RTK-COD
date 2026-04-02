@@ -1,34 +1,32 @@
 {
   "dashboard": {
     "title": "Main Dashboard",
+    "timezone": "browser",
     "panels": [
       {
-        "title": "Статус балансировщиков (VIP)",
-        "type": "stat",
-        "targets": [{ "expr": "keepalived_vip" }]
-      },
-      {
+        "id": 1,
         "title": "Доступность бэкенд-нод",
         "type": "stat",
+        "gridPos": { "h": 4, "w": 4, "x": 4, "y": 0 },
         "targets": [{ "expr": "up{job=\"node_exporter\"}" }]
       },
       {
+        "id": 2,
         "title": "Нагрузка CPU (средняя за 5 мин)",
         "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
         "targets": [{ "expr": "node_load5" }]
       },
       {
-        "title": "Состояние VIP-адреса",
-        "type": "stat",
-        "targets": [{ "expr": "keepalived_vip" }]
-      },
-      {
+        "id": 3,
         "title": "HTTP статус-коды (2xx)",
         "type": "timeseries",
-        "targets": [{ "expr": "nginx_vts_server_responses{code=\"2xx\"}" }]
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+        "targets": [{ "expr": "nginx_vts_server_requests_total{host=\"_\",code=\"2xx\"}" }]
       }
     ],
-    "timezone": "browser"
-  }
+    "schemaVersion": 36,
+    "version": 1
+  },
+  "overwrite": true
 }
-
