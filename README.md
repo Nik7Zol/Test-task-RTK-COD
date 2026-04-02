@@ -1,5 +1,20 @@
 # Тестовое задание от РТК-ЦОД
 
+Данное задание было выполнено на виртуальной машине в VirtualBox на ОС Ubuntu 24.04. После установки ОС, установил ansible и docker. 
+
+```sh
+apt update && apt install ansible docker
+```
+
+И приступил к созданию docker-compose, после Dockerfile для каждого контейнера, кроме контейнеров для мониторинга. Далее создал playbooks и hosts.ini для настройки каждого контейнера. Также создал ssh ключи для подключения к контейнерам.
+
+```sh
+ssh-keygen
+```
+
+После написал оставшиеся файлы конфигурации для nginx, grafana и victoriametrics.
+
+В конце же отправил всё выполненное задание на github.
 
 
 ## Запуск 7 контейнеров
@@ -66,5 +81,7 @@ http://localhost:8428/targets
  login: admin
  password: admin
 
+Далее нужно зайти во вкладку Dashboard. В данной части у меня не получилось выполнить полностью задачу. Не получилось найти и подключить нужные метрики.
 
+![Launching containers](https://github.com/Nik7Zol/Test-task-RTK-COD/blob/main/images/Grafana_main_dashboard.png)
 
