@@ -1,8 +1,11 @@
-- name: Wait for monitoring services
+- name: Configure monitoring via HTTP API
   hosts: localhost
   gather_facts: no
   vars:
     grafana_url: "http://grafana:3000"
+    grafana_user: admin
+    grafana_password: admin
+    auth_header: "Basic {{ (grafana_user + ':' + grafana_password) | b64encode }}"
     vm_url: "http://victoriametrics:8428"
   tasks:
     - name: Wait for Grafana to be ready
@@ -22,3 +25,30 @@
       until: result.status == 200
       retries: 30
       delay: 5
+
+    - name: Create datasource in Grafana (ignore if exists)
+      uri:
+        url: "{{ grafana_url }}/api/datasources"
+        method: POST
+        headers:
+          Authorization: "{{ auth_header }}"
+          Content-Type: "application/json"
+        body:
+          name: VictoriaMetrics
+          type: prometheus
+          url: "{{ vm_url }}"
+          access: proxy
+          isDefault: true
+        body_format: json
+        status_code: [200, 409]
+
+    - name: Import dashboard from file
+      uri:
+        url: "{{ grafana_url }}/api/dashboards/db"
+        method: POST
+        headers:
+          Authorization: "{{ auth_header }}"
+          Content-Type: "application/json"
+        body: "{{ lookup('file', '/ansible/files/main_dashboard.json') | from_json }}"
+        body_format: json
+        status_code: 200

@@ -62,8 +62,9 @@ http://localhost:8428/targets
 ```
 ![Launching containers](https://github.com/Nik7Zol/Test-task-RTK-COD/blob/main/images/VictoriaMetrics_active_all_containers.png)
 
-http://localhost:3000
+Далее заходим на Grafana по ссылке: http://localhost:3000
+ login: admin
+ password: admin
 
-login admin
-password admin
+
 
