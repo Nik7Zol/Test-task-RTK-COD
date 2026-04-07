@@ -22,7 +22,12 @@
         dest: /opt/backend/app.py
         mode: 0755
 
-    - name: Start backend app
+    - name: Check if backend app is running
+      command: pgrep -f "python3 /opt/backend/app.py"
+      register: backend_pid
+      failed_when: false
+      changed_when: false
+
+    - name: Start backend app if not running
       shell: "nohup python3 /opt/backend/app.py > /var/log/backend.log 2>&1 &"
-      become: yes
-      ignore_errors: yes
+      when: backend_pid.rc != 0

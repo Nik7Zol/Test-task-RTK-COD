@@ -62,10 +62,16 @@
         state: directory
         mode: 0755
 
-    - name: Start nginx
+    - name: Check if nginx is running
+      command: pgrep nginx
+      register: nginx_pid
+      failed_when: false
+      changed_when: false
+
+    - name: Start nginx if not running
       command: nginx
-      become: yes
-      ignore_errors: yes
+      when: nginx_pid.rc != 0
+
 
   handlers:
     - name: restart nginx

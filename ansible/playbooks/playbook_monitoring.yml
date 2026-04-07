@@ -7,6 +7,7 @@
     grafana_password: admin
     auth_header: "Basic {{ (grafana_user + ':' + grafana_password) | b64encode }}"
     vm_url: "http://victoriametrics:8428"
+    dashboard_uid: "main-dashboard"
   tasks:
     - name: Wait for Grafana to be ready
       uri:
@@ -42,10 +43,21 @@
         body_format: json
         status_code: [200, 409]
 
-    - name: Import dashboard via curl
+    - name: Check if dashboard already exists
+      uri:
+        url: "{{ grafana_url }}/api/dashboards/uid/{{ dashboard_uid }}"
+        method: GET
+        headers:
+          Authorization: "{{ auth_header }}"
+        status_code: [200, 404]
+      register: dashboard_check
+      ignore_errors: yes
+
+    - name: Import dashboard via curl (only if not exists)
       shell: |
         curl -X POST -u admin:admin http://grafana:3000/api/dashboards/db \
           -H "Content-Type: application/json" \
           -d @/ansible/files/main_dashboard.json
       register: curl_result
+      when: dashboard_check.status == 404
       failed_when: curl_result.rc != 0 or ('"success"' not in curl_result.stdout and '"id"' not in curl_result.stdout)

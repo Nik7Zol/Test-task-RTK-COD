@@ -21,14 +21,17 @@
         path: /usr/local/bin/node_exporter
         mode: 0755
 
-    - name: Start node_exporter as background process
+    - name: Check if node_exporter is running
+      command: pgrep node_exporter
+      register: node_exporter_pid
+      failed_when: false
+      changed_when: false
+
+    - name: Start node_exporter if not running
       shell: |
-        nohup /usr/local/bin/node_exporter > /var/log/node_exporter.log 2>&1 &
+        nohup /usr/local/bin/node_exporter --collector.textfile.directory=/var/lib/node_exporter/textfile > /var/log/node_exporter.log 2>&1 &
         sleep 2
-        pgrep node_exporter
-      become: yes
-      register: node_start
-      failed_when: node_start.rc != 0
+      when: node_exporter_pid.rc != 0
 
 - name: Setup keepalived metrics (textfile collector) on lb nodes
   hosts: lb

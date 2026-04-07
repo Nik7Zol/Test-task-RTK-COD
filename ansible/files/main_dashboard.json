@@ -1,6 +1,7 @@
 {
   "dashboard": {
     "title": "Main Dashboard",
+    "uid": "main-dashboard",
     "timezone": "browser",
     "panels": [
       {
