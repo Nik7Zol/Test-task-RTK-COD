@@ -19,7 +19,7 @@ ssh-keygen
 
 ## Запуск 7 контейнеров
 ```sh
- docker-compose up -d
+ docker-compose up -d --build
  docker-compose ps
 ```
 ![Launching containers](https://github.com/Nik7Zol/Test-task-RTK-COD/blob/main/images/Launching_containers.png)
