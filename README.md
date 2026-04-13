@@ -18,6 +18,24 @@ ssh-keygen
 В конце же отправил всё выполненное задание на github.
 
 
+## Установка тестового задания
+
+Для работы с тестовым заданием на свою ОС нужно скачать git, ansible, docker.
+Для Unix-систем поможет команда:
+```sh
+apt update && apt install ansible docker git
+```
+
+Далее нужно скопировать репозиторий данного проекта:
+```sh
+git clone https://github.com/Nik7Zol/Test-task-RTK-COD.git
+```
+
+После нужно перейти в клонированный католог:
+```sh
+cd Test-task-RTK-COD/
+```
+
 ## Запуск 7 контейнеров
 ```sh
  docker-compose up -d --build
