@@ -60,6 +60,8 @@ cd Test-task-RTK-COD/
  ansible-playbook -i hosts.yml playbooks/playbook_monitoring.yml
 ```
 ![Start_ansible-playbooks](https://github.com/Nik7Zol/Test-task-RTK-COD/blob/main/images/Start_ansible-playbooks.png)
+В результате команды, должна пройти без ошибок, всё должно быть в состоянии "ok".
+
 
 Устанавливаем на контейнер ansible утилиту 'curl'.
 После проверяем работоспособность бекэндов.
@@ -82,10 +84,12 @@ exit
 ```
 ![Worker_balancer_container](https://github.com/Nik7Zol/Test-task-RTK-COD/blob/main/images/Worker_balancer_container.png)
 
-Выключаем балансировщик, через который проходит трафик. В моём случае это lb1.
+Выключаем балансировщик, через который проходит трафик. В моём случае это lb1. И проверяем, что ip адресс перешёл на другой контейнер.
 
 ```sh
  docker stop lb1 # Если в прошлой команде Vip показался у 'lb1', иначе 'lb1' нужно заменить на 'lb2'
+ docker exec lb1 ip addr show | grep 192.168.100.100
+ docker exec lb2 ip addr show | grep 192.168.100.100
 ```
 ![Stop_worker_balancer_container](https://github.com/Nik7Zol/Test-task-RTK-COD/blob/main/images/Stop_worker_balancer_container.png)
 
